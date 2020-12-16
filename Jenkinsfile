@@ -22,7 +22,7 @@ pipeline {
       steps {
         withCredentials([
           sshUserPrivateKey(credentialsId: 'pvn-anchore-support.pem', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'),
-          usernamePassword(credentialsID: 'docker-hub', usernameVariable: 'HUB_USER', passwordVariable: 'HUB_PASS')
+          usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'HUB_USER', passwordVariable: 'HUB_PASS')
           ]) {
             sh '''
               ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -i ${SSH_KEY} ${SSH_USER}@anchore-priv.novarese.net docker --version
