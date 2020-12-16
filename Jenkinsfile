@@ -2,12 +2,8 @@
 
 pipeline {
   environment {
-    registry = 'registry.hub.docker.com'
-    // you need a credential named 'docker-hub' with your DockerID/password to push images
-    registryCredential = 'docker-hub'
-    // change this repository and imageLine to your DockerID
-    repository = 'pvnovarese/alpine-test'
-    imageLine = 'pvnovarese/alpine-test:latest'
+    // probably don't need imageLine here
+    // imageLine = 'pvnovarese/alpine-test:latest'
     SOURCE_IMAGE = 'alpine:latest'
     targetRepo = 'pvnovarese/alpine-test'
   }
@@ -43,7 +39,7 @@ pipeline {
     stage('Analyze with Anchore plugin') {
       steps {
         //writeFile file: 'anchore_images', text: imageLine
-        anchore name: 'anchore_images', bailOnFail: 'false', engineRetries: '900'
+        anchore name: 'anchore_images', bailOnFail: 'false'
       }
     }
 
