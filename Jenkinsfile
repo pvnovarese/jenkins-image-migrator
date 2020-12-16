@@ -46,7 +46,7 @@ pipeline {
     }
 
     stage('Clean up') {
-      // if we succuessfully pushed the :prod tag than we don't need the $BUILD_NUMBER tag anymore
+      // we don't need to keep the target image once it's been pushed to the target repo
       steps {
         withCredentials([
           sshUserPrivateKey(credentialsId: 'pvn-anchore-support.pem', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')
