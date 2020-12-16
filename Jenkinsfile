@@ -9,7 +9,6 @@ pipeline {
     repository = 'pvnovarese/alpine-test'
     imageLine = 'pvnovarese/alpine-test:latest'
     SOURCE_IMAGE = 'alpine:latest'
-    IMAGE_2 = 'pvnovarese/alpine-test:2020-12-16.${BUILD_ID}'
     targetRepo = 'pvnovarese/alpine-test'
   }
   agent any
@@ -33,6 +32,7 @@ pipeline {
               ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -i ${SSH_KEY} ${SSH_USER}@anchore-priv.novarese.net docker pull ${SOURCE_IMAGE}
               ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -i ${SSH_KEY} ${SSH_USER}@anchore-priv.novarese.net docker tag ${SOURCE_IMAGE} ${targetRepo}:${BUILD_NUMBER}
               ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -i ${SSH_KEY} ${SSH_USER}@anchore-priv.novarese.net docker push ${targetRepo}:${BUILD_NUMBER}
+              # just echoing here seems easier than using writeFile
               echo ${SOURCE_IMAGE} > anchore_images
               echo ${targetRepo}:${BUILD_NUMBER} >> anchore_images 
             '''          
@@ -48,7 +48,7 @@ pipeline {
     }
 
     stage('Clean up') {
-      // if we succuessfully pushed the :prod tag than we don't need the $BUILD_ID tag anymore
+      // if we succuessfully pushed the :prod tag than we don't need the $BUILD_NUMBER tag anymore
       steps {
         withCredentials([
           sshUserPrivateKey(credentialsId: 'pvn-anchore-support.pem', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')
