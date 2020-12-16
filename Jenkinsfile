@@ -8,8 +8,8 @@ pipeline {
     // change this repository and imageLine to your DockerID
     repository = 'pvnovarese/alpine-test'
     imageLine = 'pvnovarese/alpine-test:latest'
-    IMAGE_1=alpine:latest
-    IMAGE_2=pvnovarese/alpine-test:2020-12-16.${BUILD_ID}
+    IMAGE_1 = 'alpine:latest'
+    IMAGE_2 = 'pvnovarese/alpine-test:2020-12-16.${BUILD_ID}'
   }
   agent any
   stages {
