@@ -7,7 +7,7 @@ pipeline {
     SOURCE_IMAGE = 'alpine:latest'
     targetRepo = 'pvnovarese/alpine-test'
     JUMP_HOST = 'anchore-priv.novarese.net'
-    SSH_ARGS = '-o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no"'
+    SSH_ARGS = '-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
   }
   agent any
 
