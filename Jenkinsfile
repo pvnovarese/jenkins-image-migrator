@@ -20,10 +20,10 @@ pipeline {
     }
     stage('ssh to bastion host, pull source image and push to target repo') {
       steps {
-        withCredentials([sshUserPrivateKey(
-          credentialsId: 'pvn-anchore-support.pem',
-          keyFileVariable: 'SSH_KEY',
-          usernameVariable: 'SSH_USER')]) {
+        withCredentials([
+          sshUserPrivateKey(credentialsId: 'pvn-anchore-support.pem', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'),
+          usernamePassword(credentialsID: 'docker-hub', usernameVariable: 'HUB_USER', passwordVariable: 'HUB_PASS')
+          ]) {
             sh '''
               ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -i ${SSH_KEY} ${SSH_USER}@anchore-priv.novarese.net docker --version
               ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -i ${SSH_KEY} ${SSH_USER}@anchore-priv.novarese.net docker login -u ${HUB_USER} -p ${HUB_PASS}
