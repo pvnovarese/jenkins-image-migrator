@@ -4,9 +4,9 @@ pipeline {
   environment {
     // probably don't need imageLine here
     // imageLine = 'pvnovarese/alpine-test:latest'
-    SOURCE_IMAGE = 'alpine:latest'
-    TARGET_REPO = 'pvnovarese/alpine-test'
-    JUMP_HOST = 'anchore-priv.novarese.net'
+    SOURCE_IMAGE = 'busybox:latest'
+    TARGET_REPO = 'pvnovarese/busybox'
+    JUMP_HOST = 'anchore-priv.novarese.net' 
     SSH_ARGS = '-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
   }
   agent any
@@ -28,13 +28,13 @@ pipeline {
               ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker --version
               ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker login -u ${HUB_USER} -p ${HUB_PASS}
               ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker pull ${SOURCE_IMAGE}
-              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker tag ${SOURCE_IMAGE} ${TARGET_REPO}:temp-${BUILD_NUMBER}
-              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker push ${TARGET_REPO}:temp-${BUILD_NUMBER}
+              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker tag ${SOURCE_IMAGE} ${TARGET_REPO}:${BUILD_NUMBER}-temp
+              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker push ${TARGET_REPO}:${BUILD_NUMBER}-temp
               # once we've pushed it we don't need to keep the extra tag on the jump host
-              # ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker rmi  ${TARGET_REPO}:temp-${BUILD_NUMBER}
+              # ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker rmi  ${TARGET_REPO}:${BUILD_NUMBER}-temp
               # just echoing here seems easier than using writeFile
               echo ${SOURCE_IMAGE} > anchore_images
-              echo ${TARGET_REPO}:temp-${BUILD_NUMBER} >> anchore_images 
+              echo ${TARGET_REPO}:${BUILD_NUMBER}-temp >> anchore_images 
             '''          
           }      
       }
