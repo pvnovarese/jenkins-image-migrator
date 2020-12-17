@@ -15,9 +15,12 @@ pipeline {
     stage('Checkout SCM') {
       steps {
         checkout scm
-        //SCRATCH_IMAGE = 'echo ${TARGET_REPO} + ":" + ${BUILD_NUMBER} + "-temp"'
-        echo env.TARGET_REPO + ":" + env.BUILD_NUMBER + "-temp"
-        //echo '${SCRATCH_IMAGE}'
+        SCRATCH_IMAGE = 'echo env.TARGET_REPO + ":" + env.BUILD_NUMBER + "-temp"'
+        //echo env.TARGET_REPO + ":" + env.BUILD_NUMBER + "-temp"
+        echo "print env var in groovy"
+        echo env.SCRATCH_IMAGE
+        sh 'echo "env var in sh"'
+        sh 'echo ${SCRATCH_IMAGE}
         error("Build failed because of this and that..")
       }
     }
