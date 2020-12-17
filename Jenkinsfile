@@ -8,6 +8,7 @@ pipeline {
     TARGET_REPO = 'pvnovarese/busybox'
     JUMP_HOST = 'anchore-priv.novarese.net' 
     SSH_ARGS = '-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
+    env.SCRATCH_IMAGE = sh returnStdout: true, script: '''echo "${TARGET_REPO}:${BUILD_NUMBER}-temp"'''
   }
   agent any
 
@@ -15,7 +16,7 @@ pipeline {
     stage('Checkout SCM') {
       steps {
         checkout scm
-        env.SCRATCH_IMAGE = sh returnStdout: true, script: '''echo "${TARGET_REPO}:${BUILD_NUMBER}-temp"'''
+        //env.SCRATCH_IMAGE = sh returnStdout: true, script: '''echo "${TARGET_REPO}:${BUILD_NUMBER}-temp"'''
         //echo env.TARGET_REPO + ":" + env.BUILD_NUMBER + "-temp"
         echo "print env var in groovy"
         echo env.SCRATCH_IMAGE
