@@ -16,7 +16,7 @@ pipeline {
       steps {
         checkout scm
         //SCRATCH_IMAGE = 'echo ${TARGET_REPO} + ":" + ${BUILD_NUMBER} + "-temp"'
-        echo ${TARGET_REPO} + ":" + ${BUILD_NUMBER} + "-temp"
+        echo env.TARGET_REPO + ":" + env.BUILD_NUMBER + "-temp"
         //echo '${SCRATCH_IMAGE}'
         error("Build failed because of this and that..")
       }
