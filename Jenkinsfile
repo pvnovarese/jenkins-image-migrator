@@ -9,6 +9,7 @@ pipeline {
     JUMP_HOST = 'anchore-priv.novarese.net' 
     SSH_ARGS = '-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
     SCRATCH_IMAGE = "${TARGET_REPO}:${BUILD_NUMBER}-temp"
+    PROD_IMAGE = "${TARGET_REPO}:${BUILD_NUMBER}-prod"
   }
   agent any
 
@@ -16,13 +17,6 @@ pipeline {
     stage('Checkout SCM') {
       steps {
         checkout scm
-        //env.SCRATCH_IMAGE = sh returnStdout: true, script: '''echo "${TARGET_REPO}:${BUILD_NUMBER}-temp"'''
-        //echo env.TARGET_REPO + ":" + env.BUILD_NUMBER + "-temp"
-        echo "print env var in groovy"
-        echo env.SCRATCH_IMAGE
-        sh 'echo "env var in sh"'
-        sh 'echo ${SCRATCH_IMAGE}'
-        error("Build failed because of this and that..")
       }
     }
 
@@ -36,13 +30,12 @@ pipeline {
               ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker --version
               ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker login -u ${HUB_USER} -p ${HUB_PASS}
               ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker pull ${SOURCE_IMAGE}
-              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker tag ${SOURCE_IMAGE} ${TARGET_REPO}:${BUILD_NUMBER}-temp
-              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker push ${TARGET_REPO}:${BUILD_NUMBER}-temp
+              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker tag ${SOURCE_IMAGE} ${SCRATCH_IMAGE}
+              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker push ${SCRATCH_IMAGE}
               # once we've pushed it we don't need to keep the extra tag on the jump host
-              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker rmi  ${TARGET_REPO}:${BUILD_NUMBER}-temp
+              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker image rm ${SCRATCH_IMAGE}
               # just echoing here seems easier than using writeFile
-              echo ${SOURCE_IMAGE} > anchore_images
-              echo ${TARGET_REPO}:${BUILD_NUMBER}-temp >> anchore_images 
+              echo ${SCRATCH_IMAGE} > anchore_images
             '''          
           }      
       }
@@ -66,10 +59,10 @@ pipeline {
           sshUserPrivateKey(credentialsId: 'pvn-anchore-support.pem', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')
           ]) {
             sh '''
-              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker tag ${SOURCE_IMAGE} ${TARGET_REPO}:${BUILD_NUMBER}-prod
-              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker push ${TARGET_REPO}:${BUILD_NUMBER}-prod
+              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker tag ${SOURCE_IMAGE} ${PROD_IMAGE}
+              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker push ${PROD_IMAGE}
               # once we've pushed it we don't need to keep the extra tag on the jump host
-              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker rmi  ${TARGET_REPO}:${BUILD_NUMBER}-prod
+              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker image rm ${PROD_IMAGE} 
             '''
           }
       }
