@@ -20,7 +20,7 @@ pipeline {
       }
     }
 
-    stage('ssh to bastion host, pull source image and push to scratch repo') {
+    stage('Move Source Image to Scratch Repo') {
       steps {
         withCredentials([
           sshUserPrivateKey(credentialsId: 'pvn-anchore-support.pem', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'),
@@ -52,7 +52,7 @@ pipeline {
       }
     }
 
-    stage('Push to production repo') {
+    stage('Push to Production Repo') {
       // we don't need to keep the target image once it's been pushed to the target repo
       steps {
         withCredentials([
