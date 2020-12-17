@@ -8,7 +8,7 @@ pipeline {
     TARGET_REPO = 'pvnovarese/busybox'
     JUMP_HOST = 'anchore-priv.novarese.net' 
     SSH_ARGS = '-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
-    env.SCRATCH_IMAGE = sh returnStdout: true, script: '''echo "${TARGET_REPO}:${BUILD_NUMBER}-temp"'''
+    SCRATCH_IMAGE = "${TARGET_REPO}:${BUILD_NUMBER}-temp"
   }
   agent any
 
