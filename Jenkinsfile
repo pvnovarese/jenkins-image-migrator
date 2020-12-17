@@ -18,7 +18,7 @@ pipeline {
       }
     }
 
-    stage('ssh to bastion host, pull source image and push to target repo') {
+    stage('ssh to bastion host, pull source image and push to temporary repo') {
       steps {
         withCredentials([
           sshUserPrivateKey(credentialsId: 'pvn-anchore-support.pem', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'),
@@ -28,11 +28,13 @@ pipeline {
               ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker --version
               ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker login -u ${HUB_USER} -p ${HUB_PASS}
               ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker pull ${SOURCE_IMAGE}
-              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker tag ${SOURCE_IMAGE} ${TARGET_REPO}:${BUILD_NUMBER}
-              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker push ${TARGET_REPO}:${BUILD_NUMBER}
+              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker tag ${SOURCE_IMAGE} ${TARGET_REPO}:temp-${BUILD_NUMBER}
+              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker push ${TARGET_REPO}:temp-${BUILD_NUMBER}
+              # once we've pushed it we don't need to keep the extra tag on the jump host
+              # ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker rmi  ${TARGET_REPO}:temp-${BUILD_NUMBER}
               # just echoing here seems easier than using writeFile
               echo ${SOURCE_IMAGE} > anchore_images
-              echo ${TARGET_REPO}:${BUILD_NUMBER} >> anchore_images 
+              echo ${TARGET_REPO}:temp-${BUILD_NUMBER} >> anchore_images 
             '''          
           }      
       }
@@ -51,7 +53,12 @@ pipeline {
         withCredentials([
           sshUserPrivateKey(credentialsId: 'pvn-anchore-support.pem', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')
           ]) {
-          sh 'ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker rmi  ${TARGET_REPO}:${BUILD_NUMBER}'
+            sh '''
+              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker tag ${SOURCE_IMAGE} ${TARGET_REPO}:${BUILD_NUMBER}-prod
+              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker push ${TARGET_REPO}:${BUILD_NUMBER}-prod
+              # once we've pushed it we don't need to keep the extra tag on the jump host
+              # ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker rmi  ${TARGET_REPO}:${BUILD_NUMBER}-prod
+            '''
           }
       }
     }
