@@ -20,7 +20,7 @@ pipeline {
         echo "print env var in groovy"
         echo env.SCRATCH_IMAGE
         sh 'echo "env var in sh"'
-        sh 'echo ${SCRATCH_IMAGE}
+        sh 'echo ${SCRATCH_IMAGE}'
         error("Build failed because of this and that..")
       }
     }
