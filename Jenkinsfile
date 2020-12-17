@@ -15,7 +15,7 @@ pipeline {
     stage('Checkout SCM') {
       steps {
         checkout scm
-        env.SCRATCH_IMAGE = sh 'echo "${TARGET_REPO}:${BUILD_NUMBER}-temp"'
+        env.SCRATCH_IMAGE = sh returnStdout: true, script: '''echo "${TARGET_REPO}:${BUILD_NUMBER}-temp"'''
         //echo env.TARGET_REPO + ":" + env.BUILD_NUMBER + "-temp"
         echo "print env var in groovy"
         echo env.SCRATCH_IMAGE
