@@ -5,7 +5,8 @@ pipeline {
     // probably don't need imageLine here
     // imageLine = 'pvnovarese/alpine-test:latest'
     SOURCE_IMAGE = 'busybox:latest'
-    TARGET_REPO = 'pvnovarese/busybox'
+    TARGET_REGISTRY = 'harbor-priv.novarese.net:443'
+    TARGET_REPO = "${TARGET_REGISTRY}/hub-mirror/busybox"
     JUMP_HOST = 'anchore-priv.novarese.net' 
     SSH_ARGS = '-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
     SCRATCH_IMAGE = "${TARGET_REPO}:${BUILD_NUMBER}-temp"
@@ -24,11 +25,13 @@ pipeline {
       steps {
         withCredentials([
           sshUserPrivateKey(credentialsId: 'pvn-anchore-support.pem', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'),
-          usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'HUB_USER', passwordVariable: 'HUB_PASS')
+          usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'HUB_USER', passwordVariable: 'HUB_PASS'),
+          usernamePassword(credentialsId: 'harbor-priv.novarese.net', usernameVariable: 'TARGET_USER', passwordVariable: 'TARGET_PASS')
           ]) {
             sh '''
               ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker --version
               ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker login -u ${HUB_USER} -p ${HUB_PASS}
+              ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker login -u ${TARGET_USER} -p ${TARGET_PASS} ${TARGET_REGISTRY}
               ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker pull ${SOURCE_IMAGE}
               ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker tag ${SOURCE_IMAGE} ${SCRATCH_IMAGE}
               ssh ${SSH_ARGS} -i ${SSH_KEY} ${SSH_USER}@${JUMP_HOST} docker push ${SCRATCH_IMAGE}
